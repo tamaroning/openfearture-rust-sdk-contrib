@@ -1,4 +1,4 @@
-use flipt::error::UpstreamError;
+use flipt::{error::UpstreamError, evaluation::models::EvaluationReason};
 use open_feature::{
     EvaluationContext, EvaluationError, EvaluationErrorCode, StructValue, Value as OpenFeatureValue,
 };
@@ -48,5 +48,14 @@ pub(crate) fn translate_value(v: SerdeValue) -> Result<OpenFeatureValue, String>
             Ok(OpenFeatureValue::Array(values))
         }
         SerdeValue::Null => Err("null value is not supported".to_string()),
+    }
+}
+
+pub(crate) fn reason_as_str(reason: &EvaluationReason) -> &'static str {
+    match reason {
+        EvaluationReason::Unknown => "unknown",
+        EvaluationReason::FlagDisabled => "flag disabled",
+        EvaluationReason::Match => "match",
+        EvaluationReason::Default => "default",
     }
 }

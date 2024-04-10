@@ -12,7 +12,7 @@ use open_feature::{
 use serde_json::Value as JsonValue;
 use url::Url;
 
-use crate::utils::{translate_context, translate_error, translate_value};
+use crate::utils::{reason_as_str, translate_context, translate_error, translate_value};
 
 pub struct Config<A>
 where
@@ -75,7 +75,7 @@ impl FeatureProvider for FliptProvider {
         flag_key: &str,
         ctx: &EvaluationContext,
     ) -> EvaluationResult<ResolutionDetails<bool>> {
-        let res = self
+        let res = match self
             .client
             .evaluation
             .boolean(&EvaluationRequest {
@@ -85,12 +85,13 @@ impl FeatureProvider for FliptProvider {
                 context: translate_context(ctx),
                 reference: None,
             })
-            .await;
+            .await
+        {
+            Ok(r) => r,
+            Err(e) => return Err(translate_error(e)),
+        };
 
-        match res {
-            Ok(res) => EvaluationResult::Ok(ResolutionDetails::new(res.enabled)),
-            Err(e) => EvaluationResult::Err(translate_error(e)),
-        }
+        EvaluationResult::Ok(ResolutionDetails::new(res.enabled))
     }
 
     async fn resolve_int_value(
@@ -137,7 +138,17 @@ impl FeatureProvider for FliptProvider {
             Ok(r) => r,
             Err(e) => return Err(translate_error(e)),
         };
+
         dbg!(&res);
+
+        if !res.r#match {
+            return Err(EvaluationError::builder()
+                .code(EvaluationErrorCode::General(
+                    reason_as_str(&res.reason).to_owned(),
+                ))
+                .build());
+        }
+
         let v: JsonValue = match serde_json::from_str(&res.variant_attachment) {
             Ok(v) => v,
             Err(e) => {

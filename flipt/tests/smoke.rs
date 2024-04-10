@@ -6,7 +6,7 @@ use openfeature_flipt::provider::{Config, FliptProvider};
 #[tokio::test]
 async fn test_bool() {
     let config = Config {
-        endpoint: "http://localhost:8080".to_string(),
+        endpoint: "http://localhost:8080/".to_string(),
         auth_strategy: NoneAuthentication::new(),
         timeout: 1000,
     };
@@ -24,7 +24,7 @@ async fn test_bool() {
 #[tokio::test]
 async fn test_struct() {
     let config = Config {
-        endpoint: "http://localhost:8080".to_string(),
+        endpoint: "http://localhost:8080/".to_string(),
         auth_strategy: NoneAuthentication::new(),
         timeout: 1000,
     };
