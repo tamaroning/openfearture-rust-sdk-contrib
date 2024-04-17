@@ -1,5 +1,6 @@
 pub mod provider;
 mod utils;
 
-pub use flipt;
+// reexports
 pub use open_feature;
+pub use provider::*;

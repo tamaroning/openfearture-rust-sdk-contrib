@@ -1,15 +1,14 @@
-use flipt::NoneAuthentication;
 use open_feature::EvaluationContext;
 use openfeature_flipt::open_feature::provider::FeatureProvider;
-use openfeature_flipt::provider::{Config, FliptProvider};
+use openfeature_flipt::provider::{Config, FliptProvider, NoneAuthentication};
 
 #[tokio::test]
 async fn test_bool() {
-    let config = Config {
-        endpoint: "http://localhost:8080/".to_string(),
-        auth_strategy: NoneAuthentication::new(),
-        timeout: 60,
-    };
+    let config = Config::new(
+        "http://localhost:8080/".to_string(),
+        NoneAuthentication::new(),
+        60,
+    );
     let ctx = EvaluationContext {
         targeting_key: None,
         custom_fields: Default::default(),
@@ -61,11 +60,11 @@ curl --request POST \
 
 #[tokio::test]
 async fn test_struct() {
-    let config = Config {
-        endpoint: "http://localhost:8080/".to_string(),
-        auth_strategy: NoneAuthentication::new(),
-        timeout: 60,
-    };
+    let config = Config::new(
+        "http://localhost:8080/".to_string(),
+        NoneAuthentication::new(),
+        60,
+    );
     let ctx = EvaluationContext {
         targeting_key: None,
         custom_fields: Default::default(),

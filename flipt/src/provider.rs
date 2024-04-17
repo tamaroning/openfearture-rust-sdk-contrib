@@ -2,8 +2,7 @@ use std::collections::HashMap;
 
 use async_trait::async_trait;
 use flipt::{
-    api::FliptClient, evaluation::models::EvaluationRequest,
-    AuthenticationStrategy as FpAuthenticationStrategy, Config as FpConfig,
+    evaluation::models::EvaluationRequest, AuthenticationStrategy as FpAuthenticationStrategy,
 };
 use open_feature::{
     provider::{FeatureProvider, ProviderMetadata, ResolutionDetails},
@@ -14,20 +13,37 @@ use url::Url;
 
 use crate::utils::{reason_as_str, translate_context, translate_error, translate_value};
 
+// reexports
+pub use flipt::{ClientTokenAuthentication, JWTAuthentication, NoneAuthentication};
+
 const DEFAULT_NAMESPACE: &str = "default";
+const METADATA: &str = "flipt";
 
 pub struct Config<A>
 where
     A: FpAuthenticationStrategy,
 {
-    pub endpoint: String,
-    pub auth_strategy: A,
-    pub timeout: u64,
+    endpoint: String,
+    auth_strategy: A,
+    timeout: u64,
+}
+
+impl<A> Config<A>
+where
+    A: FpAuthenticationStrategy,
+{
+    pub fn new(endpoint: String, authentication_strategy: A, timeout: u64) -> Self {
+        Self {
+            endpoint,
+            auth_strategy: authentication_strategy.into(),
+            timeout,
+        }
+    }
 }
 
 pub struct FliptProvider {
     metadata: ProviderMetadata,
-    client: FliptClient,
+    client: flipt::api::FliptClient,
 }
 
 impl FliptProvider {
@@ -37,14 +53,14 @@ impl FliptProvider {
             Err(e) => return Err(e.to_string()),
         };
 
-        let client =
-            match FliptClient::new(FpConfig::new(url, config.auth_strategy, config.timeout)) {
-                Ok(fpconfig) => fpconfig,
-                Err(e) => return Err(e.to_string()),
-            };
+        let flipt_config = flipt::Config::new(url, config.auth_strategy, config.timeout);
+        let client = match flipt::api::FliptClient::new(flipt_config) {
+            Ok(fpconfig) => fpconfig,
+            Err(e) => return Err(e.to_string()),
+        };
 
         Ok(Self {
-            metadata: ProviderMetadata::new("flipt"),
+            metadata: ProviderMetadata::new(METADATA),
             client,
         })
     }
@@ -53,8 +69,8 @@ impl FliptProvider {
 impl Default for FliptProvider {
     fn default() -> Self {
         FliptProvider {
-            metadata: ProviderMetadata::new("flipt"),
-            client: FliptClient::default(),
+            metadata: ProviderMetadata::new(METADATA),
+            client: flipt::api::FliptClient::default(),
         }
     }
 }
