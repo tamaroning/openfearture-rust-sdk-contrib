@@ -35,7 +35,7 @@ where
     pub fn new(endpoint: String, authentication_strategy: A, timeout: u64) -> Self {
         Self {
             endpoint,
-            auth_strategy: authentication_strategy.into(),
+            auth_strategy: authentication_strategy,
             timeout,
         }
     }
@@ -194,7 +194,7 @@ impl FeatureProvider for FliptProvider {
                     ))
                     .message(format!(
                         "variant attachment must be an object, but found `{}`",
-                        v.to_string()
+                        v
                     ))
                     .build())
             }
