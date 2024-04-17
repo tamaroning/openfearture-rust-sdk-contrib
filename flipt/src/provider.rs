@@ -14,6 +14,8 @@ use url::Url;
 
 use crate::utils::{reason_as_str, translate_context, translate_error, translate_value};
 
+const DEFAULT_NAMESPACE: &str = "default";
+
 pub struct Config<A>
 where
     A: FpAuthenticationStrategy,
@@ -79,7 +81,10 @@ impl FeatureProvider for FliptProvider {
             .client
             .evaluation
             .boolean(&EvaluationRequest {
-                namespace_key: ctx.targeting_key.clone().unwrap_or("default".into()),
+                namespace_key: ctx
+                    .targeting_key
+                    .clone()
+                    .unwrap_or(DEFAULT_NAMESPACE.into()),
                 flag_key: flag_key.into(),
                 entity_id: "entity".into(),
                 context: translate_context(ctx),
@@ -127,7 +132,10 @@ impl FeatureProvider for FliptProvider {
             .client
             .evaluation
             .variant(&EvaluationRequest {
-                namespace_key: ctx.targeting_key.clone().unwrap_or("default".into()),
+                namespace_key: ctx
+                    .targeting_key
+                    .clone()
+                    .unwrap_or(DEFAULT_NAMESPACE.into()),
                 flag_key: flag_key.into(),
                 entity_id: "entity".into(),
                 context: translate_context(ctx),
